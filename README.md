@@ -15,7 +15,7 @@ Intégration Toastify pour Home Assistant permettant d'afficher de superbes noti
 ### 1. Via HACS (Recommandé)
 1. Ouvrez **HACS** dans votre instance Home Assistant.
 2. Cliquez sur les 3 points en haut à droite > **Dépôts personnalisés**.
-3. Ajoutez l'URL de ce dépôt : `https://github.com/TitjyDev/HA-Toastify`.
+3. Ajoutez l'URL de ce dépôt : `https://github.com/TidjyDev/HA-Toastify`.
 4. Sélectionnez la catégorie **Intégration** et cliquez sur **Ajouter**.
 5. Recherchez "Toastify" et installez-le.
 6. **Redémarrez Home Assistant.**

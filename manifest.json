@@ -2,7 +2,7 @@
   "domain": "toastify",
   "name": "Toastify Notifications",
   "codeowners": ["@TidjyDev"],
-  "documentation": "https://github.com/TitjyDev/HA-Toastify",
+  "documentation": "https://github.com/TidjyDev/HA-Toastify",
   "dependencies": ["frontend"],
   "iot_class": "local_push",
   "version": "1.0.0"
