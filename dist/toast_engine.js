@@ -124,14 +124,15 @@
             if (d.icon && d.icon.trim() !== "") {
                 let iconElement;
                 if (d.icon.startsWith("mdi:")) {
-                    // Si c'est un MDI, on crée un composant icône Home Assistant
+                    // Icône MDI
                     iconElement = document.createElement("ha-icon");
                     iconElement.setAttribute("icon", d.icon);
-                    iconElement.style.setProperty('--mdc-icon-size', '40px'); // Définit la taille de l'icône
-                    iconElement.style.width = "40px";  // Définit la largeur du conteneur
-                    iconElement.style.height = "40px"; // Définit la hauteur du conteneur
-                    iconElement.style.color = textColor; // Elle prend la couleur du texte
+                    iconElement.style.setProperty('--mdc-icon-size', '40px');
+                    iconElement.style.width = "40px";
+                    iconElement.style.height = "40px";
+                    iconElement.style.color = textColor;
                 } else {
+                    // Image
                     iconElement = document.createElement("img");
                     iconElement.src = d.icon;
                     iconElement.style.width = "48px";
@@ -149,8 +150,8 @@
             const textContainer = document.createElement("div");
             textContainer.style.display = "flex";
             textContainer.style.flexDirection = "column";
-            textContainer.style.justifyContent = "center"; // Centre le contenu verticalement dans sa propre colonne
-            textContainer.style.alignItems = "center"; // Garde le texte et bouton alignés à gauche
+            textContainer.style.justifyContent = "center";
+            textContainer.style.alignItems = "center";
             textContainer.style.flexGrow = "1"; 
             textContainer.style.paddingRight = "25px";
             
@@ -160,7 +161,6 @@
             textSpan.style.lineHeight = "1.2";
             textSpan.style.fontWeight = "600";
             textSpan.style.color = textColor;
-            // On ajoute le texte dans le textContainer (et pas directement dans container)
             textContainer.appendChild(textSpan);
 
 
@@ -248,58 +248,4 @@
             (err) => console.error("[Toastify] Le tunnel a été refusé par le serveur", err)
         );
     }
-
-    // --- BLOC DE TEST POUR LE README (À supprimer avant la version finale) ---
-    
-        // Petit délai pour laisser Home Assistant finir de charger son interface
-        setTimeout(() => {
-            
-            // 1. Alerte Critique (Haut - Droite)
-            createToast({
-                message: "Alerte Sécurité : Mouvement détecté",
-                duration: 15000,
-                gravity: "top",
-                position: "right",
-                color: "error",
-                icon: "mdi:motion-sensor",
-                button_label: "VOIR CAMÉRA",
-                close: true,
-                onClick: { action: "camera.play_stream" }
-            });
-
-            // 2. Succès (Haut - Droite - s'empilera sous le premier)
-            createToast({
-                message: "✅ Tidjy est bien arrivé à la maison.",
-                duration: 15000,
-                gravity: "top",
-                position: "right",
-                color: "success",
-                icon: "/toastify_lib/images/uifaces-popular-avatar.jpg",
-                button_label: "DISARM ALARM",
-                close: true,
-                onClick: { action: "alarm_control_panel.alarm_disarm" }
-            });
-
-            // 3. Info (Bas - Droite)
-            createToast({
-                message: "ℹ️ Information : La batterie du téléphone est faible (12%).",
-                duration: 15000,
-                gravity: "bottom",
-                position: "right",
-                color: "info",
-                close: true
-            });
-
-            // 4. Warning (Haut - Gauche)
-            createToast({
-                message: "⚠️ Attention : Consommation électrique élevée détectée.",
-                duration: 15000,
-                gravity: "top",
-                position: "left",
-                color: "warning",
-                close: true,
-            });
-
-        }, 5000); // 2 secondes de délai après le load
-    
 })();
