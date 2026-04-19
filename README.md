@@ -10,6 +10,8 @@ Intégration Toastify pour Home Assistant permettant d'afficher de superbes noti
 - **Actions Interactives** : Cliquez sur un toast pour ouvrir une URL ou **appeler un service Home Assistant** (ex: éteindre une lumière ou rediriger vers un dashboard).
 - **Utilise le service Notify** : Totalement compatible avec le système de notification natif de Home Assistant.
 
+![Aperçu de Toastify](dist/images/toastify1.jpg)
+
 ## 📦 Installation
 
 ### 1. Via HACS (Recommandé)
@@ -40,11 +42,11 @@ notify:
 | `position` | Alignement horizontal : `left`, `center` ou `right`. | `right` |
 | `gravity` | Alignement vertical : `top` ou `bottom`. | `top` |
 | `close` | Affiche une croix de fermeture (`true` / `false`). | `false` |
-| `icon` | URL d'une image ou d'un avatar (ex: `/local/avatar.png`). | 
-| `oldestFirst` | URL d'une image ou d'un avatar (ex: `/local/avatar.png`). | `true` |
+| `icon` | URL d'une image ou d'un avatar (ex: `/local/avatar.png`) ou icône MDI. | 
+| `oldestFirst` | Ordre des notifications lors de l'empilement | `true` |
 | `visibility` | `dashboard` (Lovelace seul) ou `all` (Partout dans HA). | `dashboard` |
-| `onClick` | Action au clic sur le toast : Appel de service HA (ex: `action: light.turn_off`) ou URL (/lovelace/0).
-| `callback` | Action à la fermeture du toast : Appel de service HA (ex: light.turn_off) ou URL (/lovelace/0).
+| `onClick` | Action au clic sur le toast : Appel de service HA (ex: `action: light.turn_off`) ou URL (/lovelace/0). | (ex: switch.toggle) |
+| `callback` | Action à la fermeture du toast : Appel de service HA (ex: light.turn_off) ou URL (/lovelace/0). | (ex: light.turn_on) |
 | `action_data` | Données pour l'appel de services HA. Appelé en paramètre `onClick` ou `callback`. | Dictionnaire YAML (ex: `entity_id: light.salon`). |
 | `button_label` | Label du bouton `onClick` | "Voir"
 

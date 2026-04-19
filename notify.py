@@ -1,6 +1,6 @@
 from homeassistant.components.notify import BaseNotificationService
 from homeassistant.helpers.event import async_call_later
-from homeassistant.core import Context, callback
+from homeassistant.core import Context, EventOrigin, callback
 from homeassistant.util.async_ import run_callback_threadsafe
 
 def get_service(hass, config, discovery_info=None):
@@ -36,12 +36,13 @@ class ToastifyNotificationService(BaseNotificationService):
         }
 
         # Envoi au Frontend
+        @callback
         def fire_event():
-            self.hass.bus.async_fire("toastify_event", event_data, None, Context())
+            self.hass.bus.async_fire("toastify_event", event_data, origin=EventOrigin.local, context=Context())
 
         run_callback_threadsafe(self.hass.loop, fire_event)
 
-        # Gestion du Callback Serveur (Services HA)
+        # Gestion du Callback côté serveur (Services HA)
         if isinstance(callback_data, dict):
             action = callback_data.get("action", "")
             if "." in action:
