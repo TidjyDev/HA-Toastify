@@ -6,6 +6,24 @@
         link.rel = 'stylesheet';
         link.href = '/toastify_lib/toastify.css';
         document.head.appendChild(link);
+
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes toast-label-pulse {
+                0% { opacity: 1; }
+                50% { opacity: 0.2; }
+                100% { opacity: 1; }
+            }
+            /* L'animation s'applique uniquement à l'enfant (le label) */
+            .toast-btn-loading .btn-label-text {
+                animation: toast-label-pulse 0.8s infinite ease-in-out !important;
+            }
+            .toast-btn-loading {
+                pointer-events: none !important;
+                cursor: default;
+            }
+        `;
+        document.head.appendChild(style);
     }
 
     // Chargement JS
@@ -69,28 +87,35 @@
     }
 
     // Gestionnaire d'actions (URL ou Service HA)
-    function executeAction(actionObj) {
-        if (!actionObj) return;
+    async function executeAction(actionObj) {
+        if (!actionObj) return false;
 
         // On gère si c'est une simple string (compatibilité) ou un objet
         const action = (typeof actionObj === 'string') ? actionObj.trim() : actionObj.action?.trim();
         const serviceData = actionObj.action_data || {};
 
-        if (!action) return;
+        if (!action) return false;
 
         // URL
         if (action.startsWith("http") || action.startsWith("/")) {
             window.open(action, "_blank");
+            return true;
         } 
         // Appel de service Home Assistant
         else if (action.includes(".")) {
             const [domain, service] = action.split(".");
             const hass = document.querySelector("home-assistant")?.hass;
-            
             if (hass) {
-                hass.callService(domain, service, serviceData);
+                try {
+                    await hass.callService(domain, service, serviceData);
+                    return true;
+                } catch (e) {
+                    console.error("[Toastify] Erreur service:", e);
+                    return false;
+                }
             }
         }
+        return false;
     }
 
     function createToast(data) {
@@ -99,15 +124,11 @@
         if (!d.message) return;
 
         const visibility = d.visibility || "dashboard";
-        // On vérifie où se trouve l'utilisateur
-        const isDashboard = window.location.pathname.includes("lovelace") || 
-                            window.location.pathname.includes("dashboard");
-
-        // Condition de visibilité
+        const p = window.location.pathname;
+        const isDashboard = p.includes("lovelace") || p.includes("dashboard");
         const shouldShow = (visibility === "all" || (visibility === "dashboard" && isDashboard));
 
         if (shouldShow) {
-            // Thème
             const colorInput = d.color ? d.color.toLowerCase() : "default";
             const finalColor = TOAST_THEMES[colorInput] || d.color || TOAST_THEMES["default"];
             const textColor = getContrastColor(finalColor);
@@ -124,7 +145,6 @@
             if (d.icon && d.icon.trim() !== "") {
                 let iconElement;
                 if (d.icon.startsWith("mdi:")) {
-                    // Icône MDI
                     iconElement = document.createElement("ha-icon");
                     iconElement.setAttribute("icon", d.icon);
                     iconElement.style.setProperty('--mdc-icon-size', '40px');
@@ -132,7 +152,6 @@
                     iconElement.style.height = "40px";
                     iconElement.style.color = textColor;
                 } else {
-                    // Image
                     iconElement = document.createElement("img");
                     iconElement.src = d.icon;
                     iconElement.style.width = "48px";
@@ -146,7 +165,7 @@
                 container.appendChild(iconElement);
             }
 
-            // --- Container pour le Texte et le Bouton ---
+            // Container pour le Texte et le Bouton
             const textContainer = document.createElement("div");
             textContainer.style.display = "flex";
             textContainer.style.flexDirection = "column";
@@ -163,7 +182,7 @@
             textSpan.style.color = textColor;
             textContainer.appendChild(textSpan);
 
-
+            // Toast
             const toastInstance = Toastify({
                 node: container,
                 duration: d.duration || 5000,
@@ -196,23 +215,61 @@
             // Bouton
             if (d.onClick) {
                 const btn = document.createElement("button");
-                btn.innerText = d.button_label || "VOIR";
+                const btnBorder = textColor === "#000000" ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.25)";
+                btn.innerHTML = `<span class="btn-label-text">${d.onClick.label || "VOIR"}</span>`;
+                btn.style.fontSize = "0.75em";
+                btn.style.fontWeight = "bold";
+                btn.style.letterSpacing = "0.5px";
                 btn.style.marginTop = "8px";
                 btn.style.padding = "4px 12px";
-                btn.style.background = "rgba(0, 0, 0, 0.15)";
-                btn.style.border = `1px solid ${textColor}`;
+                btn.style.background = "rgba(0, 0, 0, 0.2)";
+                btn.style.border = `1px solid ${btnBorder}`;
                 btn.style.color = textColor;
                 btn.style.borderRadius = "6px";
                 btn.style.fontSize = "0.8em";
                 btn.style.cursor = "pointer";
+                btn.style.transition = "all 0.3s ease";
 
-                btn.onmouseenter = () => btn.style.background = "rgba(0, 0, 0, 0.3)";
+                btn.onmouseenter = () => btn.style.background = "rgba(0, 0, 0, 0.4)";
                 btn.onmouseleave = () => btn.style.background = "rgba(0, 0, 0, 0.2)";
 
-                btn.onclick = (e) => {
+                btn.onclick = async (e) => {
                     e.stopPropagation();
-                    executeAction(d.onClick);
-                    setTimeout(() => toastInstance.hideToast(), 1000);
+                    const labelSpan = btn.querySelector('.btn-label-text');
+                    const hasFeedback = d.onClick.feedback === true || d.onClick.feedback === "true";
+
+                    if (hasFeedback) {
+                        btn.disabled = true;
+                        btn.classList.add("toast-btn-loading");
+                    }
+
+                    const success = await executeAction(d.onClick);
+
+                    if (hasFeedback) {
+                        // On laisse la pulsation au moins 500ms pour que ce soit visible
+                        setTimeout(() => {
+                            btn.classList.remove("toast-btn-loading");
+                            labelSpan.style.transition = "opacity 0.2s ease";
+                            labelSpan.style.opacity = "0";
+                            
+                            setTimeout(() => {
+                                if (success) {
+                                    btn.innerHTML = `<span class="btn-label-text"><ha-icon icon="mdi:check" style="--mdc-icon-size: 16px; margin-right: 5px;"></ha-icon> EFFECTUÉ</span>`;
+                                } else {
+                                    btn.innerHTML = `<span class="btn-label-text"><ha-icon icon="mdi:alert-circle" style="--mdc-icon-size: 16px; margin-right: 5px;"></ha-icon> ERREUR</span>`;
+                                    btn.style.background = "rgba(255, 0, 0, 0.3)";
+                                }
+
+                                const newLabel = btn.querySelector('.btn-label-text');
+                                newLabel.style.opacity = "0";
+
+                                setTimeout(() => newLabel.style.opacity = "1", 300);
+                                setTimeout(() => toastInstance.hideToast(), 1800);
+                            }, 300);
+                        }, 1500);
+                    } else {
+                        setTimeout(() => toastInstance.hideToast(), 500);
+                    }
                 };
                 textContainer.appendChild(btn);
             }
@@ -225,7 +282,7 @@
                 closeBtn.style.position = "absolute";
                 closeBtn.style.top = "8px";
                 closeBtn.style.right = "8px";
-                closeBtn.style.opacity = "0.6";
+                closeBtn.style.opacity = "0.7";
                 closeBtn.style.padding = "0";
                 closeBtn.style.lineHeight = "1";
             }
