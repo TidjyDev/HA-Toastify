@@ -292,13 +292,8 @@
 
     // Abonnement via la commande WebSocket personnalisée
     function setupListener(hass) {
-        console.log("[Toastify] Tentative d'abonnement au tunnel sécurisé...");
-
         hass.connection.subscribeMessage(
-            (message) => {
-                console.log("[Toastify] Message reçu via tunnel :", message);
-                createToast(message);
-            },
+            (message) => { createToast(message); },
             { type: "toastify/subscribe" }
         ).then(
             null, // Silencieux si tout va bien
